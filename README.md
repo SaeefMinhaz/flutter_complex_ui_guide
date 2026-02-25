@@ -84,7 +84,7 @@ This project was developed with assistance from generative AI as a **coding part
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>.git
+   git clone <https://github.com/SaeefMinhaz/flutter_complex_ui_guide>.git
    cd flutter_complex_ui_guide
    ```
 
