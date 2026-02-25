@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import 'widgets/live_event_card.dart';
+import 'widgets/pre_match_event_card.dart';
 import 'widgets/schedule_calendar_strip.dart';
 
 /// Schedule tab content. Calendar strip (F5), Live (F6), Pre-match/Result in F7–F9.
@@ -64,10 +65,41 @@ class SchedulePage extends StatelessWidget {
           ]),
         ),
         SliverToBoxAdapter(
+          child: SectionHeader(title: 'Pre-match events'),
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            PreMatchEventCard(
+              competitionText: "T20 World Cup. 2026. Group stage. Group A",
+              team1Name: 'Pakistan',
+              team2Name: 'Namibia',
+              countdownText: '03 : 44 : 43',
+              dateTimeText: '18.02.26 15:30',
+              team1Leading: _flagPlaceholder(),
+              team2Leading: _flagPlaceholder(),
+              w1Value: '1.079',
+              xValue: '25',
+              w2Value: '8.8',
+            ),
+            PreMatchEventCard(
+              competitionText: "T20 World Cup. 2026. Group stage. Group A",
+              team1Name: 'India',
+              team2Name: 'Netherlands',
+              countdownText: '05 : 12 : 00',
+              dateTimeText: '18.02.26 18:00',
+              team1Leading: _flagPlaceholder(),
+              team2Leading: _flagPlaceholder(),
+              w1Value: '1.05',
+              xValue: '26',
+              w2Value: '9.2',
+            ),
+          ]),
+        ),
+        SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Pre-match · Results (F7–F9)',
+              'Results (F8–F9)',
               style: AppTextStyles.bodySmall,
             ),
           ),
