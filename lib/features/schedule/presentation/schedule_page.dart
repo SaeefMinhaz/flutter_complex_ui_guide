@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/theme.dart';
+import '../../../core/widgets/widgets.dart';
+import 'widgets/live_event_card.dart';
 import 'widgets/schedule_calendar_strip.dart';
 
-/// Schedule tab content. Calendar strip (F5), Live/Pre-match/Result in F6–F9.
+/// Schedule tab content. Calendar strip (F5), Live (F6), Pre-match/Result in F7–F9.
 class SchedulePage extends StatelessWidget {
   const SchedulePage({super.key});
 
@@ -13,6 +15,15 @@ class SchedulePage extends StatelessWidget {
     const int month = DateTime.february;
     return List.generate(7, (i) => DateTime(year, month, 14 + i));
   }
+
+  static Widget _flagPlaceholder() => Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(4),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +38,36 @@ class SchedulePage extends StatelessWidget {
           ),
         ),
         SliverToBoxAdapter(
+          child: SectionHeader(
+            title: 'Live events',
+            trailing: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: AppColors.liveIndicator,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            LiveEventCard(
+              competitionText: "T20 World Cup. 2026. Group stage. Group D",
+              team1Name: 'South Africa',
+              team1Score: '0/0',
+              team2Name: 'United Arab Emirates',
+              team2Score: '29/0 (2.5 ov)',
+              team1Leading: _flagPlaceholder(),
+              team2Leading: _flagPlaceholder(),
+            ),
+          ]),
+        ),
+        SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Live events · Pre-match · Results (F6–F9)',
+              'Pre-match · Results (F7–F9)',
               style: AppTextStyles.bodySmall,
             ),
           ),
