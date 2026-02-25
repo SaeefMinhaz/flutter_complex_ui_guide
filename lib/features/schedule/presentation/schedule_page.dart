@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../data/repositories/mock_schedule_repository.dart';
+import '../domain/usecases/get_schedule_for_date_usecase.dart';
+import 'bloc/schedule_bloc.dart';
+import 'bloc/schedule_event.dart';
+import 'bloc/schedule_state.dart';
 import 'widgets/live_event_card.dart';
 import 'widgets/pre_match_event_card.dart';
 import 'widgets/result_event_card.dart';
 import 'widgets/schedule_calendar_strip.dart';
 
-/// Schedule tab content. Calendar strip (F5), Live (F6), Pre-match/Result in F7–F9.
+/// Schedule tab content. Calendar (F5), Live (F6), Pre-match (F7), Result (F8), Bloc (F9).
 class SchedulePage extends StatelessWidget {
   const SchedulePage({super.key});
 
-  /// Example range: 14–20 February 2026 (F9 will provide dates from Bloc).
-  static List<DateTime> get _exampleDates {
-    const int year = 2026;
-    const int month = DateTime.february;
-    return List.generate(7, (i) => DateTime(year, month, 14 + i));
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ScheduleBloc(
+        GetScheduleForDateUseCase(MockScheduleRepository()),
+      )..add(ScheduleRequested(initialDate: DateTime(2026, 2, 18))),
+      child: const _ScheduleView(),
+    );
   }
+}
+
+class _ScheduleView extends StatelessWidget {
+  const _ScheduleView();
 
   static Widget _flagPlaceholder() => Container(
         width: 24,
@@ -29,101 +42,115 @@ class SchedulePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: ScheduleCalendarStrip(
-            dates: _exampleDates,
-            initialSelectedIndex: 4,
-            eventDotDateIndices: const {3, 4},
-            onDateSelected: (_) {},
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: SectionHeader(
-            title: 'Live events',
-            trailing: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.liveIndicator,
-                shape: BoxShape.circle,
+    return BlocBuilder<ScheduleBloc, ScheduleState>(
+      buildWhen: (prev, next) =>
+          prev.dates != next.dates ||
+          prev.selectedDate != next.selectedDate ||
+          prev.liveEvents != next.liveEvents ||
+          prev.preMatchEvents != next.preMatchEvents ||
+          prev.resultEvents != next.resultEvents ||
+          prev.eventDotDateIndices != next.eventDotDateIndices ||
+          prev.status != next.status,
+      builder: (context, state) {
+        if (state.status == ScheduleStatus.initial ||
+            state.status == ScheduleStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final dates = state.dates.isEmpty ? _fallbackDates() : state.dates;
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: ScheduleCalendarStrip(
+                dates: dates,
+                initialSelectedIndex: state.selectedDateIndex.clamp(0, dates.length - 1),
+                eventDotDateIndices: state.eventDotDateIndices,
+                onDateSelected: (date) =>
+                    context.read<ScheduleBloc>().add(ScheduleDateSelected(date)),
               ),
             ),
-          ),
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate([
-            LiveEventCard(
-              competitionText: "T20 World Cup. 2026. Group stage. Group D",
-              team1Name: 'South Africa',
-              team1Score: '0/0',
-              team2Name: 'United Arab Emirates',
-              team2Score: '29/0 (2.5 ov)',
-              team1Leading: _flagPlaceholder(),
-              team2Leading: _flagPlaceholder(),
+            SliverToBoxAdapter(
+              child: SectionHeader(
+                title: 'Live events',
+                trailing: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.liveIndicator,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
             ),
-          ]),
-        ),
-        SliverToBoxAdapter(
-          child: SectionHeader(title: 'Pre-match events'),
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate([
-            PreMatchEventCard(
-              competitionText: "T20 World Cup. 2026. Group stage. Group A",
-              team1Name: 'Pakistan',
-              team2Name: 'Namibia',
-              countdownText: '03 : 44 : 43',
-              dateTimeText: '18.02.26 15:30',
-              team1Leading: _flagPlaceholder(),
-              team2Leading: _flagPlaceholder(),
-              w1Value: '1.079',
-              xValue: '25',
-              w2Value: '8.8',
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final e = state.liveEvents[index];
+                  return LiveEventCard(
+                    competitionText: e.competitionText,
+                    team1Name: e.team1Name,
+                    team1Score: e.team1Score,
+                    team2Name: e.team2Name,
+                    team2Score: e.team2Score,
+                    team1Leading: _flagPlaceholder(),
+                    team2Leading: _flagPlaceholder(),
+                  );
+                },
+                childCount: state.liveEvents.length,
+              ),
             ),
-            PreMatchEventCard(
-              competitionText: "T20 World Cup. 2026. Group stage. Group A",
-              team1Name: 'India',
-              team2Name: 'Netherlands',
-              countdownText: '05 : 12 : 00',
-              dateTimeText: '18.02.26 18:00',
-              team1Leading: _flagPlaceholder(),
-              team2Leading: _flagPlaceholder(),
-              w1Value: '1.05',
-              xValue: '26',
-              w2Value: '9.2',
+            SliverToBoxAdapter(
+              child: SectionHeader(title: 'Pre-match events'),
             ),
-          ]),
-        ),
-        SliverToBoxAdapter(
-          child: SectionHeader(title: 'Results'),
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate([
-            ResultEventCard(
-              competitionText: "T20 World Cup. 2026. Group stage. Group C",
-              team1Name: 'Scotland',
-              team1Score: '170/7',
-              team2Name: 'Nepal',
-              team2Score: '171/3',
-              dateTimeText: '17.02.2026 (19:00)',
-              team1Leading: _flagPlaceholder(),
-              team2Leading: _flagPlaceholder(),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final e = state.preMatchEvents[index];
+                  return PreMatchEventCard(
+                    competitionText: e.competitionText,
+                    team1Name: e.team1Name,
+                    team2Name: e.team2Name,
+                    countdownText: e.countdownText,
+                    dateTimeText: e.dateTimeText,
+                    team1Leading: _flagPlaceholder(),
+                    team2Leading: _flagPlaceholder(),
+                    w1Value: e.w1Value,
+                    xValue: e.xValue,
+                    w2Value: e.w2Value,
+                  );
+                },
+                childCount: state.preMatchEvents.length,
+              ),
             ),
-            ResultEventCard(
-              competitionText: "T20 World Cup. 2026. Group stage. Group C",
-              team1Name: 'West Indies',
-              team1Score: '165/8',
-              team2Name: 'Italy',
-              team2Score: '142',
-              dateTimeText: '17.02.2026 (15:30)',
-              team1Leading: _flagPlaceholder(),
-              team2Leading: _flagPlaceholder(),
+            SliverToBoxAdapter(
+              child: SectionHeader(title: 'Results'),
             ),
-          ]),
-        ),
-      ],
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final e = state.resultEvents[index];
+                  return ResultEventCard(
+                    competitionText: e.competitionText,
+                    team1Name: e.team1Name,
+                    team1Score: e.team1Score,
+                    team2Name: e.team2Name,
+                    team2Score: e.team2Score,
+                    dateTimeText: e.dateTimeText,
+                    team1Leading: _flagPlaceholder(),
+                    team2Leading: _flagPlaceholder(),
+                  );
+                },
+                childCount: state.resultEvents.length,
+              ),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  static List<DateTime> _fallbackDates() {
+    const year = 2026;
+    const month = DateTime.february;
+    return List.generate(7, (i) => DateTime(year, month, 14 + i));
   }
 }
