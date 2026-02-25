@@ -72,7 +72,12 @@ High-level structure:
 
 ## 3. Generative AI Usage
 
+This project was developed with assistance from generative AI as a **coding partner**, not as a full code generator.
 
+- **Project bootstrapping & structure**: I used AI to discuss and validate the initial project structure (feature folders, BLoC layers, shared widgets) and to cross‑check that the architecture followed common clean/BLoC best practices.
+- **Generic UI flows**: For standard UI patterns (e.g., sliver compositions, tab layouts, reusable widgets) I asked AI for example patterns and then adapted the code to match the provided ICC T20 designs and my own coding style.
+- **Technical implementation guidance**: For more complex pieces (state management wiring, scroll behaviors, animations, responsiveness), I used AI to get guidelines, trade‑offs, and API reminders, then implemented and refined the final solution myself, validating that it aligned with Flutter and BLoC best practices.
+- **Human review & ownership**: All architectural decisions, implementation details, and final code were reviewed, adjusted, and approved by me before being committed to the repository.
 ---
 
 ## 4. How to Run
