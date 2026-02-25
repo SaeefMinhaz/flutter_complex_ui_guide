@@ -4,6 +4,7 @@ import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import 'widgets/live_event_card.dart';
 import 'widgets/pre_match_event_card.dart';
+import 'widgets/result_event_card.dart';
 import 'widgets/schedule_calendar_strip.dart';
 
 /// Schedule tab content. Calendar strip (F5), Live (F6), Pre-match/Result in F7–F9.
@@ -96,13 +97,31 @@ class SchedulePage extends StatelessWidget {
           ]),
         ),
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Results (F8–F9)',
-              style: AppTextStyles.bodySmall,
+          child: SectionHeader(title: 'Results'),
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            ResultEventCard(
+              competitionText: "T20 World Cup. 2026. Group stage. Group C",
+              team1Name: 'Scotland',
+              team1Score: '170/7',
+              team2Name: 'Nepal',
+              team2Score: '171/3',
+              dateTimeText: '17.02.2026 (19:00)',
+              team1Leading: _flagPlaceholder(),
+              team2Leading: _flagPlaceholder(),
             ),
-          ),
+            ResultEventCard(
+              competitionText: "T20 World Cup. 2026. Group stage. Group C",
+              team1Name: 'West Indies',
+              team1Score: '165/8',
+              team2Name: 'Italy',
+              team2Score: '142',
+              dateTimeText: '17.02.2026 (15:30)',
+              team1Leading: _flagPlaceholder(),
+              team2Leading: _flagPlaceholder(),
+            ),
+          ]),
         ),
       ],
     );
